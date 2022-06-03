@@ -27,8 +27,8 @@
   "ADD", "MULT", "DIV", "MOD", "EQ", "NEQ", "LT", "GT", "LTE", "GTE", "SEMICOLON", "COLON", "COMMA", "L_PAREN", "R_PAREN", "L_SQUARE_BRACKET", "R_SQUARE_BRACKET", "ASSIGN",
   "program", "functions", "function", "declarations", "declaration", "identifiers", "statements", "statement", "vars", "bool_exp", "relation_and_exp", "relation_exp",
   "comp", "expression", "multiplicative_expression", "term", "expressions", "var", "ident"};
-  std::set<std::string> funcs;
-  std::map<std::string, std::string> varTemp;
+  std::set<std::string> functionTable;
+  std::map<std::string, std::string> varTable;
   std::map<std::string, int> arrSize;
 
 %}
@@ -68,7 +68,6 @@
 %left GT GTE LT LTE EQ NEQ
 %left ADD SUB
 %left MULT DIV MOD
-// %right UNARY_MINUS ????
 %left L_SQUARE_BRACKET R_SQUARE_BRACKET
 %left L_PAREN R_PAREN
 
@@ -146,10 +145,10 @@ declarations: %empty {
   };
 
 func_ident: ident {
-    if (funcs.find($1.place) != funcs.end()) {
+    if (functionTable.find($1.place) != functionTable.end()) {
       printf("function name %s is already declared.\n", $1.place);
     } else {
-      funcs.insert($1.place);
+      functionTable.insert($1.place);
     }
     $$.place = strdup($1.place);
     $$.code = strdup("");
@@ -170,11 +169,11 @@ declaration: identifiers COLON INTEGER {
           printf("Error on line %d: Identifier %s's name is a reserved word.\n", currLine, ident.c_str());
           hasErrors = true;
         }
-        if (funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end()) {
+        if (functionTable.find(ident) != functionTable.end() || varTable.find(ident) != varTable.end()) {
           printf("Error in line %d: Identifier %s is previously declared.\n", currLine, ident.c_str());
           hasErrors = true;
         } else {
-          varTemp[ident] = ident;
+          varTable[ident] = ident;
           arrSize[ident] = 1;
         }
         temp.append(ident);
@@ -187,10 +186,10 @@ declaration: identifiers COLON INTEGER {
           hasErrors = true;
           // exit(1);
         }
-        if (funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end()) {
+        if (functionTable.find(ident) != functionTable.end() || varTable.find(ident) != varTable.end()) {
           printf("Error in line %d: Identifier %s is previously declared.\n", currLine, ident.c_str());
         } else {
-          varTemp[ident] = ident;
+          varTable[ident] = ident;
           arrSize[ident] = 1;
         }
         temp.append(ident);
@@ -217,7 +216,7 @@ declaration: identifiers COLON INTEGER {
     // std::string ident_temp;
     std::string type_temp;
     while (type_ss >> type_temp) {
-      varTemp[type_temp] = type_temp;
+      varTable[type_temp] = type_temp;
       arrSize[type_temp] = 1;
       temp.append(". " + type_temp + "\n");
       temp.append("= " + type_temp + ", " + new_enum() + "\n");
@@ -252,14 +251,14 @@ declaration: identifiers COLON INTEGER {
           hasErrors = true;
           // exit(1);
         }
-        if (funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end()) {
+        if (functionTable.find(ident) != functionTable.end() || varTable.find(ident) != varTable.end()) {
           printf("Error on line %d: Identifier %s is previously declared.\n", currLine, ident.c_str());
         } else {
           if ($5 <= 0) {
             printf("Declaring array ident %s of size <= 0.\n", ident.c_str());
             exit(0);
           }
-          varTemp[ident] = ident;
+          varTable[ident] = ident;
           arrSize[ident] = $5;
         }
         temp.append(ident + ", " + std::to_string($5) + "\n"); // .[] x, 5 
@@ -271,7 +270,7 @@ declaration: identifiers COLON INTEGER {
           hasErrors = true;
           // exit(1);
         }
-        if (funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end()) {
+        if (functionTable.find(ident) != functionTable.end() || varTable.find(ident) != varTable.end()) {
           printf("Error line line %d: Identifier %s is previously declared.\n", currLine, ident.c_str());
           hasErrors = true;
           // exit(1);
@@ -280,7 +279,7 @@ declaration: identifiers COLON INTEGER {
             printf("Declaring array ident %s of size <= 0.\n", ident.c_str());
             exit(0);
           }
-          varTemp[ident] = ident;
+          varTable[ident] = ident;
           arrSize[ident] = $5;
         }
         temp.append(", ");
@@ -324,13 +323,13 @@ statement: var ASSIGN expression {
     std::string parse($1.place); // a,i if array 
 
     if (parse.find(",") != std::string::npos) { // Is an array
-      if (varTemp.find(parse.substr(0, parse.find(","))) == varTemp.end()) {
+      if (varTable.find(parse.substr(0, parse.find(","))) == varTable.end()) {
         printf("Error on line %d: using variable %s before defined.\n", currLine, $1.place);
         hasErrors = true;
         // exit(1);
       }
     } else { // Not an array
-      if (varTemp.find(parse) == varTemp.end()) {
+      if (varTable.find(parse) == varTable.end()) {
         printf("Error on line %d: using variable %s before defined.\n",currLine, $1.place);
         hasErrors = true;
         // exit(1);
@@ -440,7 +439,7 @@ statement: var ASSIGN expression {
       if (t.find(",") != std::string::npos) { // If it is an array
         // .[]< src, index
 
-        if (varTemp.find(t.substr(0, t.find(","))) == varTemp.end()) {
+        if (varTable.find(t.substr(0, t.find(","))) == varTable.end()) {
           printf("Error on line %d: using variable %s before defined.\n", currLine, t.c_str());
           hasErrors = true;
           // exit(1);
@@ -449,7 +448,7 @@ statement: var ASSIGN expression {
       } else { // If its just a normal variable
         // .< src
 
-        if (varTemp.find(t) == varTemp.end()) {
+        if (varTable.find(t) == varTable.end()) {
           printf("Error on line %d: using variable %s before defined.\n", currLine, t.c_str());
           hasErrors = true;
           // exit(1);
@@ -477,7 +476,7 @@ statement: var ASSIGN expression {
       if (t.find(",") != std::string::npos) { // If it is an array
         // .[]> src, index
 
-        if (varTemp.find(t.substr(0, t.find(","))) == varTemp.end()) {
+        if (varTable.find(t.substr(0, t.find(","))) == varTable.end()) {
           printf("Error on line %d: Use of undeclared variable %s before defined.\n", currLine, t.c_str());
           hasErrors = true;
           // exit(1);
@@ -485,7 +484,7 @@ statement: var ASSIGN expression {
         temp.append(".[]> " + t.substr(0, t.find(",")) + ", " + t.substr(t.find(",")+1) + "\n");
       } else { // If its just a normal variable
         // .> src
-        if (varTemp.find(t) == varTemp.end()) {
+        if (varTable.find(t) == varTable.end()) {
           printf("Error on line %d: Use of undeclared variable %s before defined.\n", currLine, t.c_str());
           hasErrors = true;
           // exit(1);
@@ -717,13 +716,13 @@ multiplicative_expression: term {
 term: SUB var {
     std::string parse($2.place);
     if (parse.find(",") != std::string::npos) { // Is an array
-      if (varTemp.find(parse.substr(0, parse.find(","))) == varTemp.end()) {
+      if (varTable.find(parse.substr(0, parse.find(","))) == varTable.end()) {
         printf("Error on line %d: using variable %s before defined.\n",currLine, $2.place);
         hasErrors = true;
         // exit(1);
       }
     } else { // Not an array
-      if (varTemp.find(parse) == varTemp.end()) {
+      if (varTable.find(parse) == varTable.end()) {
         printf("Error on line %d: using variable %s before defined.\n", currLine, $2.place);
         hasErrors = true;
         // exit(1);
@@ -760,7 +759,7 @@ term: SUB var {
     temp.append($1.code);
     temp.append(". " + holder + "\n");
     if (parse.find(",") != std::string::npos) { // Is an array
-      if (varTemp.find(parse.substr(0, parse.find(","))) == varTemp.end()) {
+      if (varTable.find(parse.substr(0, parse.find(","))) == varTable.end()) {
         printf("Error on line %d: using variable %s before defined.\n", currLine, $1.place);
         hasErrors = true;
         // exit(1);
@@ -769,7 +768,7 @@ term: SUB var {
       temp.append(parse.substr(0, parse.find(",")));
       temp.append(parse.substr(parse.find(",")) + "\n");
     } else { // Not an array
-      if (varTemp.find(parse) == varTemp.end()) {
+      if (varTable.find(parse) == varTable.end()) {
         printf("Error on line %d: using variable %s before defined.\n", currLine, $1.place);
         hasErrors = true;
         // exit(1);
@@ -788,7 +787,7 @@ term: SUB var {
     $$.code = $2.code;
   }
   | ident L_PAREN expressions R_PAREN {
-    if(funcs.find(std::string($1.place)) == funcs.end()){
+    if(functionTable.find(std::string($1.place)) == functionTable.end()){
       printf("Error on line %d: Use of undeclared function %s\n", currLine, $1.place);
       hasErrors = true;
       // exit(1);
