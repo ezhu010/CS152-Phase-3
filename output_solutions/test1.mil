@@ -1,0 +1,35 @@
+func test
+. k
+. j
+= k, $0
+= j, $1
+. y
+. __temp__0
+= __temp__0, k
+. __temp__1
+= __temp__1, j
+. __temp__2
++ __temp__2, __temp__0, __temp__1
+= y, __temp__2
+. __temp__3
+= __temp__3, y
+ret __temp__3
+endfunc
+
+func main
+. x
+param 2
+param 2
+. __temp__4
+call test, __temp__4
+= x, __temp__4
+. __temp__5
+= __temp__5, x
+. __temp__6
+* __temp__6, 2, 4
+. __temp__7
++ __temp__7, __temp__5, __temp__6
+= x, __temp__7
+.> x
+endfunc
+

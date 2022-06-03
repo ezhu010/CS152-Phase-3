@@ -1,0 +1,27 @@
+function test;
+beginparams
+b : integer;
+endparams
+beginlocals
+endlocals
+beginbody
+    b := b + 10;
+    write b;
+    return b;
+endbody
+
+
+function main;
+beginparams
+endparams
+beginlocals
+    a : array[3] of integer;
+    c : integer;
+endlocals
+beginbody
+    read a[0], a[1], a[2];
+    c := test(a[0]);
+
+    write a[0], a[1], a[2];
+    
+endbody

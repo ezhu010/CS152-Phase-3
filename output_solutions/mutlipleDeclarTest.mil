@@ -1,0 +1,31 @@
+func test
+. b
+= b, $0
+. __temp__0
+= __temp__0, b
+. __temp__1
++ __temp__1, __temp__0, 10
+= b, __temp__1
+.> b
+. __temp__2
+= __temp__2, b
+ret __temp__2
+endfunc
+
+func main
+.[] a, 3
+. c
+.[]< a, 0
+.[]< a, 1
+.[]< a, 2
+. __temp__3
+=[] __temp__3, a,0
+param __temp__3
+. __temp__4
+call test, __temp__4
+= c, __temp__4
+.[]> a, 0
+.[]> a, 1
+.[]> a, 2
+endfunc
+

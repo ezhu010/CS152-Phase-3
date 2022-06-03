@@ -1,0 +1,4 @@
+Error on line 7: Identifier n is previously declared.
+Error on line 11: using variable z before defined.
+Error on line 12: using array variable r as non-array
+Error on line 15: continue statement not within a loop. main

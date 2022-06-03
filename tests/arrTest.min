@@ -1,0 +1,21 @@
+function main;
+beginparams
+endparams
+beginlocals
+	x :  array [5] of integer;
+    i : integer;
+endlocals
+beginbody
+    i := 0;
+    x[0] := 0;
+    x[1] := 1;
+    x[2] := 2;
+    x[3] := 3;
+    x[4] := 4;
+    while i < 5
+        beginloop   
+            write x[i];
+            i := i + 1;
+        endloop;
+    
+endbody

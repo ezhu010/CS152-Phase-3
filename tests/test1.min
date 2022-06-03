@@ -1,0 +1,28 @@
+function test;
+beginparams
+	k : integer;
+	j : integer;
+endparams
+beginlocals
+	y : integer;
+endlocals
+beginbody
+	y := k + j;
+	return y;
+endbody
+
+
+
+
+function main;
+beginparams
+endparams
+beginlocals
+	x : integer;
+endlocals
+beginbody
+	x := test(2, 2);
+	x := x + 2 * 4;
+	write x;
+
+endbody
